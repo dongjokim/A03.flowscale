@@ -132,6 +132,24 @@ TGraphErrors* GetRatio( TGraphErrors * l, TGraphErrors *r ){
         return gr_ratio;
 }
 
+TGraphErrors* GetRatio( TGraphErrors * l, TGraphAsymmErrors *r ){
+        TGraphErrors * gr_ratio = new TGraphErrors( l->GetN() );
+        TGraph ger( r->GetN(),  r->GetX(),l->GetEY() );
+        for( int i=0; i< l->GetN(); i++ ){
+                double x = l->GetX()[i];
+                double y1 = l->GetY()[i];
+                double ey1 = l->GetEY()[i];
+                double y2 = r->Eval(x);
+                double ey2 = ger.Eval(x);
+
+
+                double ratio = y1 / y2;
+                gr_ratio->SetPoint( i,  x, ratio);
+                gr_ratio->SetPointError( i,  0, ratio*TMath::Sqrt( ey1*ey1/y1/y1+ey2*ey2/y2/y2));
+        }
+        return gr_ratio;
+}
+
 
 void makeHistHEPDATA(TH1F *srch, TH1F *he1, TH1F *he2, TH1F *tarh)
 {

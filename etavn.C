@@ -10,6 +10,9 @@ TString S_Obs[NObs] = {"v2{2}","v2{4}","v3{2}","v4{2}"}; //https://doi.org/10.17
 TString S_Energy[NEnergy] = {"#sqrt{s_{NN}} = 2.76TeV","#sqrt{s_{NN}} = 5.02TeV"};
 TGraphAsymmErrors *gr_vneta[NEnergy][NObs][NC];
 TF1 *fgaus[NEnergy][NObs][NC];
+// 5TeV PbPb in TH1D from Freja
+TH1D *h5tevv2[NC];
+TH1D *h5tevv2_ampt[NC];
 
 void LoadHEPData();
 void DrawData(int io);
@@ -30,6 +33,13 @@ void LoadHEPData() {
      fgaus[0][io][ic]->SetTitle(title);
     }
   }
+  TFile *fin_5tev = TFile::Open("data/FT_v2.root");// from Freja
+  for(int ic=0;ic<NC;ic++) {
+    h5tevv2[ic] = (TH1D*)fin_5tev->Get(Form("v2_cent_%.0f_%.0f",cent[ic],cent[ic+1]));
+    h5tevv2_ampt[ic] = (TH1D*)fin_5tev->Get(Form("ampt_v2_cent_%.0f_%.0f",cent[ic],cent[ic+1]));
+    h5tevv2[ic]->Fit("gaus");
+    fgaus[1][0][ic] = h5tevv2[ic]->GetFunction("gaus");
+  }
 }
 
 // Plot cenetrality dep
@@ -40,6 +50,38 @@ void PlotCentralityDep(){
       DrawData(io);
      }
    }
+}
+
+// integrate over eta acceptance from the fitted functions
+void integratedvneta5TeV(){
+  LoadHEPData();
+  double vnintegrated[D_COUNT][NC];
+  double v2int;
+  for(int is = 0; is < D_COUNT; is++){
+     for(int ic=0;ic<NC;ic++) {
+        // need to normalize by what ? to get mean
+        double norm = TMath::Abs(decAcc[is][0]-decAcc[is][1]);
+        vnintegrated[is][ic] = fgaus[1][0][ic]->Integral(decAcc[is][0],decAcc[is][1])/norm;
+        //cout << pdetn[is] <<"\t"<< S_Obs[io]<<"\t"<< ic<<"\t"<< vnintegrated[is][io][ic] << endl;
+      }
+  }
+  double centmean[NC];
+  for(int ic=0;ic<NC;ic++) {
+    centmean[ic] = cent[ic]+(cent[ic+1]-cent[ic])/2.;
+  }
+  // now calculate v2 as a function of cent for each dector and compare..
+  TGraphErrors *grflow[D_COUNT];
+  for(int is = 0; is < D_COUNT; is++){
+       grflow[is] = new TGraphErrors(NC,centmean,vnintegrated[is],0,0);
+       grflow[is]->SetName(Form("grflow_etaintegratedE%02dD%02dO%02d",1,is,0));
+       grflow[is]->SetTitle(Form("%s, %s, %.1f<#eta<%.1f %s",S_Obs[0].Data(),pdetn[is],decAcc[is][0],decAcc[is][1],S_Energy[1].Data()));
+  }
+  TFile *fout = new TFile("v2etaintegrated_5tev.root","recreate");
+  fout->cd();
+  for(int is = 0; is < D_COUNT; is++){
+        grflow[is]->Write();
+  }
+  fout->Close();
 }
 
 // integrate over eta acceptance from the fitted functions
