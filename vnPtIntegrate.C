@@ -4,7 +4,7 @@
 double integralv2(TF1 *fflow, TF1 *fspectra, double lpt, double hpt); // via integral
 double SampingMethod(TF1 *fflow, TF1 *fspectra, double lpt, double hpt); // via simple samping
 double FitVN(double *x,double *par); // Vn(pt) fit function
-double LevyTsallisF0(double *x, double *par){ // Spectra Tsallis fit function, Eq1 : https://arxiv.org/pdf/1510.05449.pdf
+double LevyTsallisF0(double *x, double *par){ // Spectra Tsallis fit function, Eq1 : https://arxiv.org/pdf/1510.05449.pdf https://arxiv.org/abs/1911.04878
 double mass = par[3];
  return x[0] * par[0] *
          ( ( par[1]-1 )*( par[1]-2 ) ) /
