@@ -86,7 +86,6 @@ double integralv2(TF1 *fflow, TF1 *fspectra, double lpt, double hpt){
 }
 
 
-
 // Main function to calculate integrated v2
 double GetIntegratedv2(int iC, double lpt, double hpt){
     TString label = Form("%2.0f-%2.0f%% %.1f<p_{T}<%.1f",cent[iC],cent[iC+1],lpt,hpt);
