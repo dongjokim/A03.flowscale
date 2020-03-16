@@ -2,6 +2,9 @@
 #include "include/rootcommon.h"
 #include "include/detector.h" // define detector acceptances
 
+int qColor[] = { kBlack, kRed, kBlue, kGreen+2, kOrange-3, kMagenta+1, kViolet, kPink, kGray, 40, 48, 9 };
+int qMarker[] = { 20,24, 21, 25, 24,34, 28, 26, 20, 21, 23 };
+
 const int NC = 6;
 double cent[NC+1] =           { 0, 5,10,20,30,40,50}; 
 const int NEnergy = 2; // 2.76 5.02TeV
@@ -12,6 +15,7 @@ TGraphAsymmErrors *gr_vneta[NEnergy][NObs][NC];
 TF1 *fgaus[NEnergy][NObs][NC];
 // 5TeV PbPb in TH1D from Freja
 TH1D *h5tevv2[NC];
+TH1D *h5tevv2_sys[NC];
 TH1D *h5tevv2_ampt[NC];
 
 void LoadHEPData();
@@ -37,6 +41,7 @@ void LoadHEPData() {
   for(int ic=0;ic<NC;ic++) {
     h5tevv2[ic] = (TH1D*)fin_5tev->Get(Form("v2_cent_%.0f_%.0f",cent[ic],cent[ic+1]));
     h5tevv2_ampt[ic] = (TH1D*)fin_5tev->Get(Form("ampt_v2_cent_%.0f_%.0f",cent[ic],cent[ic+1]));
+    h5tevv2_sys[ic] = (TH1D*)fin_5tev->Get(Form("sys_v2_cent_%.0f_%.0f",cent[ic],cent[ic+1]));
     h5tevv2[ic]->Fit("gaus");
     fgaus[1][0][ic] = h5tevv2[ic]->GetFunction("gaus");
   }
@@ -46,9 +51,7 @@ void LoadHEPData() {
 void PlotCentralityDep(){
    LoadHEPData();
    for(int io=0;io<NObs;io++) {
-     for(int ic=0;ic<NC;ic++) {
       DrawData(io);
-     }
    }
 }
 
@@ -143,7 +146,7 @@ void integratedvneta(){
   //==== Lower pad
   p = fpad->GetPad(2);
   p->SetTickx(); p->SetGridy(1); p->SetLogx(0), p->SetLogy(0); p->cd();
-  TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, 0.,1.2);
+  TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, 0.2,1.2);
   hset( *hfr1, "centrality[%]","#frac{Data}{Ref}",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);
   hfr1->Draw();
     
@@ -177,18 +180,19 @@ void DrawData(int io){
     TPad *p = fpad->GetPad(1); //upper pad
     p->SetTickx(); p->SetLogx(0); p->SetLogy(0); p->cd();
     double lowx = -5.,highx=5.;
-    double ly=0,hy=0.18;
+    double ly=0,hy=0.15;
     TH2F *hfr = new TH2F("hfr"," ", 100,lowx, highx, 10, ly, hy); // numbers: tics x, low limit x, upper limit x, tics y, low limit y, upper limit y
-    hset( *hfr, "#eta", "Obs",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);//settings of the upper pad: x-axis, y-axis
+    hset( *hfr, "#eta", S_Obs[io],1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);//settings of the upper pad: x-axis, y-axis
     hfr->Draw();
     //Legend definition
-    TLegend *leg = new TLegend(0.2,0.5,0.85,0.78,"","brNDC");
+    TLegend *leg = new TLegend(0.70,0.45,0.85,0.80,"","brNDC");
     leg->SetTextSize(0.04);leg->SetBorderSize(0);leg->SetFillStyle(0);//legend settings;
-    leg->AddEntry(gr_vneta[0][io][0],Form("%s",S_Obs[io].Data()),"");
+    leg->AddEntry(gr_vneta[0][io][0],Form("%s %s",S_Obs[io].Data(),S_Energy[0].Data()),"");
     for(int ic=0;ic<NC;ic++){
-      gr_vneta[0][io][ic]->SetMarkerStyle(20+ic);
-      gr_vneta[0][io][ic]->SetMarkerColor(1+ic);
-      gr_vneta[0][io][ic]->SetLineColor(1+ic);
+      gr_vneta[0][io][ic]->SetMarkerStyle(qMarker[ic]);
+      gr_vneta[0][io][ic]->SetMarkerColor(qColor[ic]);
+      gr_vneta[0][io][ic]->SetLineColor(qColor[ic]);
+      fgaus[0][io][ic]->SetLineColor(qColor[ic]);
       gr_vneta[0][io][ic]->Draw("psame");
       TString label = Form("%2.0f-%2.0f%%",cent[ic],cent[ic+1]);
       leg->AddEntry(gr_vneta[0][io][ic],Form("%s",label.Data()),"lp");
@@ -199,17 +203,73 @@ void DrawData(int io){
     //==== Lower pad
     p = fpad->GetPad(2);
     p->SetTickx(); p->SetGridy(1); p->SetLogx(0), p->SetLogy(0); p->cd();
-    TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, 0,5);
-    hset( *hfr1, "centrality[%]","#frac{Ref-Data}{Ref}",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);
+    TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, 0.1,5.);
+    hset( *hfr1, "centrality[%]","#frac{Data}{Ref}",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);
     hfr1->Draw();
     TGraphAsymmErrors *gr_ratio[NC];
     int iref=0;
-    for(int i=0;i<NC;i++){
-      gr_ratio[i] = GetRatio(gr_vneta[0][io][i],gr_vneta[0][io][iref]);
-      gr_ratio[i]->SetMarkerStyle(20+i);
-      gr_ratio[i]->SetMarkerColor(1+i);
-      gr_ratio[i]->Draw("psame");
+    for(int ic=0;ic<NC;ic++){
+      gr_ratio[ic] = GetRatio(gr_vneta[0][io][ic],gr_vneta[0][io][iref]);
+      gr_ratio[ic]->SetMarkerStyle(qMarker[ic]);
+      gr_ratio[ic]->SetMarkerColor(qColor[ic]);
+      gr_ratio[ic]->Draw("psame");
   }
-   //gPad->GetCanvas()->SaveAs("figs/integratedv2_ptdiff.pdf");
+  gPad->GetCanvas()->SaveAs(Form("figs/vnetaObs%02d_2.76TeV.pdf",io));
+}
+
+// Draw 5TeV data..
+void DrawData5TeV(){
+  int gFillStyle = 1000;
+  int gFillColor[5] = {kBlue-4, kRed-4, kRed-6, kGreen-10, kCyan-4};
+  LoadHEPData();
+  Filipad *fpad;
+  fpad = new Filipad(1, 0.9, 0.4, 100, 100, 1.1,7);
+    fpad->Draw();
+    //==== Upper pad
+    TPad *p = fpad->GetPad(1); //upper pad
+    p->SetTickx(); p->SetLogx(0); p->SetLogy(0); p->cd();
+    double lowx = -5.,highx=5.;
+    double ly=0,hy=0.15;
+    TH2F *hfr = new TH2F("hfr"," ", 100,lowx, highx, 10, ly, hy); // numbers: tics x, low limit x, upper limit x, tics y, low limit y, upper limit y
+    hset( *hfr, "#eta", "v2{2,#Delta#eta>0.8,2.6}",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);//settings of the upper pad: x-axis, y-axis
+    hfr->Draw();
+    //Legend definition
+    TLegend *leg = new TLegend(0.70,0.45,0.85,0.80,"","brNDC");
+    leg->SetTextSize(0.05);leg->SetBorderSize(0);leg->SetFillStyle(0);//legend settings;
+    leg->AddEntry(h5tevv2[0],Form("%s",S_Energy[1].Data()),"");
+    for(int ic=0;ic<NC;ic++){
+      h5tevv2_sys[ic]->SetLineWidth(2);
+      h5tevv2_sys[ic]->SetFillStyle( gFillStyle);
+      h5tevv2_sys[ic]->SetFillColor( gFillColor[ic] );
+      //h5tevv2_sys[ic]->Draw("same2");
+
+      h5tevv2[ic]->SetMarkerStyle(qMarker[ic]);
+      h5tevv2[ic]->SetMarkerColor(qColor[ic]);
+      h5tevv2[ic]->SetLineColor(qColor[ic]);
+      fgaus[1][0][ic]->SetLineColor(qColor[ic]);
+      h5tevv2[ic]->Draw("psame");
+      TString label = Form("%2.0f-%2.0f%%",cent[ic],cent[ic+1]);
+      leg->AddEntry(h5tevv2[ic],Form("%s",label.Data()),"lp");
+
+    }
+
+    leg->Draw();
+  
+    //==== Lower pad
+    p = fpad->GetPad(2);
+    p->SetTickx(); p->SetGridy(1); p->SetLogx(0), p->SetLogy(0); p->cd();
+    TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, 0.1,5.);
+    hset( *hfr1, "centrality[%]","#frac{Data}{Ref}",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);
+    hfr1->Draw();
+    TH1D *h_ratio[NC];
+    int iref=0;
+    for(int ic=0;ic<NC;ic++){
+      h_ratio[ic] = (TH1D*)h5tevv2[ic]->Clone();
+      h_ratio[ic]->Divide(h5tevv2[iref]);
+      h_ratio[ic]->SetMarkerStyle(qMarker[ic]);
+      h_ratio[ic]->SetMarkerColor(qColor[ic]);
+      h_ratio[ic]->Draw("psame");
+  }
+  gPad->GetCanvas()->SaveAs(Form("figs/vnetaObs%02d_5TeV.pdf",0));
 }
 
