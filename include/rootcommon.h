@@ -44,9 +44,6 @@ TGraphAsymmErrors *GetDataOverTheory(TGraphAsymmErrors *gr, TF1 *ftheory ){
         eyh[ii] = gr->GetErrorYhigh(ii);
     }
     for(int ii=0;ii<NC;ii++){
-        //y[ii]   = ( ftheory->Eval(x[ii]) - y[ii] )/y[ii];
-        //eyl[ii] = ftheory->Eval(x[ii])*eyl[ii] / y[ii] / y[ii];
-        //eyh[ii] = ftheory->Eval(x[ii])*eyh[ii] / y[ii] / y[ii];
         y[ii]   = ( ftheory->Eval(x[ii]) - y[ii] ) / ftheory->Eval(x[ii]);
         eyl[ii] = eyl[ii]/ftheory->Eval(x[ii]);
         eyh[ii] = eyh[ii]/ftheory->Eval(x[ii]);
@@ -85,9 +82,6 @@ TGraphAsymmErrors *GetRatio(TGraphAsymmErrors *gr, TF1 *ftheory ){
         eyh[ii] = gr->GetErrorYhigh(ii);
     }
     for(int ii=0;ii<NC;ii++){
-        //y[ii]   = ( ftheory->Eval(x[ii]) - y[ii] )/y[ii];
-        //eyl[ii] = ftheory->Eval(x[ii])*eyl[ii] / y[ii] / y[ii];
-        //eyh[ii] = ftheory->Eval(x[ii])*eyh[ii] / y[ii] / y[ii];
         y[ii]   = y[ii]  / ftheory->Eval(x[ii]);
         eyl[ii] = eyl[ii]/ftheory->Eval(x[ii]);
         eyh[ii] = eyh[ii]/ftheory->Eval(x[ii]);
@@ -132,6 +126,7 @@ TGraphErrors* GetRatio( TGraphErrors * l, TGraphErrors *r ){
         return gr_ratio;
 }
 
+// need to check the error!!!!!
 TGraphErrors* GetRatio( TGraphErrors * l, TGraphAsymmErrors *r ){
         TGraphErrors * gr_ratio = new TGraphErrors( l->GetN() );
         TGraph ger( r->GetN(),  r->GetX(),l->GetEY() );
