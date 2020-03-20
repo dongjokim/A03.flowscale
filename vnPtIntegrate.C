@@ -193,8 +193,8 @@ double GetIntegratedv2(int iC, double lpt, double hpt){
 // Run over various pt bins
 void GetScaleForPtDiff(){
 	LoadHEPData();
-	const int Npt=3;
-	double startPtbins[3] = {0.,0.2,0.5};
+	const int Npt=4;
+	double startPtbins[Npt] = {0.,0.2,0.5,0.8};
 	double endPt = 5.0;
 	double intv2[Npt][NC];
 	double centmean[NC];
@@ -235,7 +235,7 @@ void GetScaleForPtDiff(){
     //==== Lower pad
     p = fpad->GetPad(2);
     p->SetTickx(); p->SetGridy(1); p->SetLogx(0), p->SetLogy(0); p->cd();
-    TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, -0.5,0.5);
+    TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, -1.0,0.5);
     hset( *hfr1, "centrality[%]","#frac{Ref-Data}{Ref}",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);
     hfr1->Draw();
     TGraphAsymmErrors *gr_ratio[Npt];
