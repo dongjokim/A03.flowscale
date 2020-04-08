@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"ic",
+				"ic"
+			],
+			[
 				"cen",
 				"centmean"
 			],
@@ -37,20 +41,13 @@
 			}
 		},
 		{
-			"file": "hepdata_histo.C",
-			"settings":
-			{
-				"buffer_size": 1202,
-				"encoding": "UTF-8",
-				"line_ending": "Unix"
-			}
-		},
-		{
+			"contents": "void hset(TH1& hid, TString xtit=\"\", TString ytit=\"\",\n        double titoffx = 1.1, double titoffy = 1.1,\n        double titsizex = 0.06, double titsizey = 0.06,\n        double labeloffx = 0.01, double labeloffy = 0.001,\n        double labelsizex = 0.05, double labelsizey = 0.05,\n        int divx = 505, int divy=505)\n{\n    hid.GetXaxis()->CenterTitle(1);\n    hid.GetYaxis()->CenterTitle(1);\n\n    hid.GetXaxis()->SetTitleOffset(titoffx);\n    hid.GetYaxis()->SetTitleOffset(titoffy);\n\n    hid.GetXaxis()->SetTitleSize(titsizex);\n    hid.GetYaxis()->SetTitleSize(titsizey);\n\n    hid.GetXaxis()->SetLabelOffset(labeloffx);\n    hid.GetYaxis()->SetLabelOffset(labeloffy);\n\n    hid.GetXaxis()->SetLabelSize(labelsizex);\n    hid.GetYaxis()->SetLabelSize(labelsizey);\n\n    hid.GetXaxis()->SetNdivisions(divx);\n    hid.GetYaxis()->SetNdivisions(divy);\n\n    hid.GetXaxis()->SetTitle(xtit);\n    hid.GetYaxis()->SetTitle(ytit);\n\n    hid.GetXaxis()->SetLabelFont(42);\n    hid.GetYaxis()->SetLabelFont(42);\n    hid.GetXaxis()->SetTitleFont(42);\n    hid.GetYaxis()->SetTitleFont(42);\n}\n\n// Theory-Data/Theory\nTGraphAsymmErrors *GetDataOverTheory(TGraphAsymmErrors *gr, TF1 *ftheory ){\n    double x[300], y[300], exl[300], exh[300], eyl[300], eyh[300];\n    int NC =  gr->GetN();\n    for(int ii=0;ii<NC;ii++){\n        gr->GetPoint(ii,x[ii],y[ii]);\n        exl[ii] = gr->GetErrorXlow(ii);\n        exh[ii] = gr->GetErrorXhigh(ii);\n        eyl[ii] = gr->GetErrorYlow(ii);\n        eyh[ii] = gr->GetErrorYhigh(ii);\n    }\n    for(int ii=0;ii<NC;ii++){\n        y[ii]   = ( ftheory->Eval(x[ii]) - y[ii] ) / ftheory->Eval(x[ii]);\n        eyl[ii] = eyl[ii]/ftheory->Eval(x[ii]);\n        eyh[ii] = eyh[ii]/ftheory->Eval(x[ii]);\n    }\n    return new TGraphAsymmErrors(NC, x, y, exl, exh, eyl, eyh);\n}\n\n// error must be corrected later\nTGraphAsymmErrors *GetDataOverTheory(TGraphAsymmErrors *grData, TGraphAsymmErrors *grTheo ){\n    double x[300], y[300], exl[300], exh[300], eyl[300], eyh[300];\n    int NC =  grData->GetN();\n    for(int ii=0;ii<NC;ii++){\n        grData->GetPoint(ii,x[ii],y[ii]);\n        exl[ii] = grData->GetErrorXlow(ii);\n        exh[ii] = grData->GetErrorXhigh(ii);\n        eyl[ii] = grData->GetErrorYlow(ii);\n        eyh[ii] = grData->GetErrorYhigh(ii);\n    }\n    for(int ii=0;ii<NC;ii++){\n        y[ii]   = ( grTheo->Eval(x[ii]) - y[ii] ) / grTheo->Eval(x[ii]);\n        eyl[ii] = eyl[ii]/grTheo->Eval(x[ii]);\n        eyh[ii] = eyh[ii]/grTheo->Eval(x[ii]);\n    }\n    return new TGraphAsymmErrors(NC, x, y, exl, exh, eyl, eyh);\n}\n\n// Data/Fit\nTGraphAsymmErrors *GetRatio(TGraphAsymmErrors *gr, TF1 *ftheory ){\n    double x[300], y[300], exl[300], exh[300], eyl[300], eyh[300];\n    int NC =  gr->GetN();\n    for(int ii=0;ii<NC;ii++){\n        gr->GetPoint(ii,x[ii],y[ii]);\n        exl[ii] = gr->GetErrorXlow(ii);\n        exh[ii] = gr->GetErrorXhigh(ii);\n        eyl[ii] = gr->GetErrorYlow(ii);\n        eyh[ii] = gr->GetErrorYhigh(ii);\n    }\n    for(int ii=0;ii<NC;ii++){\n        y[ii]   = y[ii]  / ftheory->Eval(x[ii]);\n        eyl[ii] = eyl[ii]/ftheory->Eval(x[ii]);\n        eyh[ii] = eyh[ii]/ftheory->Eval(x[ii]);\n    }\n    return new TGraphAsymmErrors(NC, x, y, exl, exh, eyl, eyh);\n}\n\n// error must be corrected later\nTGraphAsymmErrors *GetRatio(TGraphAsymmErrors *grData, TGraphAsymmErrors *grTheo ){\n    double x[300], y[300], exl[300], exh[300], eyl[300], eyh[300];\n    int NC =  grData->GetN();\n    for(int ii=0;ii<NC;ii++){\n        grData->GetPoint(ii,x[ii],y[ii]);\n        exl[ii] = grData->GetErrorXlow(ii);\n        exh[ii] = grData->GetErrorXhigh(ii);\n        eyl[ii] = grData->GetErrorYlow(ii);\n        eyh[ii] = grData->GetErrorYhigh(ii);\n    }\n    for(int ii=0;ii<NC;ii++){\n        y[ii]   = y[ii]/grTheo->Eval(x[ii]);\n        eyl[ii] = eyl[ii]/grTheo->Eval(x[ii]);\n        eyh[ii] = eyh[ii]/grTheo->Eval(x[ii]);\n    }\n    return new TGraphAsymmErrors(NC, x, y, exl, exh, eyl, eyh);\n}\n\nTGraphErrors* GetRatio( TGraphErrors * l, TGraphErrors *r ){\n        TGraphErrors * gr_ratio = new TGraphErrors( l->GetN() );\n        TGraph ger( r->GetN(),  r->GetX(),l->GetEY() );\n        for( int i=0; i< l->GetN(); i++ ){\n                double x = l->GetX()[i];\n                double y1 = l->GetY()[i];\n                double ey1 = l->GetEY()[i];\n                double y2 = r->Eval(x);\n                double ey2 = ger.Eval(x);\n\n\n                double ratio = y1 / y2;\n                gr_ratio->SetPoint( i,  x, ratio);\n                gr_ratio->SetPointError( i,  0, ratio*TMath::Sqrt( ey1*ey1/y1/y1+ey2*ey2/y2/y2));\n        }\n        return gr_ratio;\n}\n\n// need to check the error!!!!!\nTGraphErrors* GetRatio( TGraphErrors * l, TGraphAsymmErrors *r ){\n        TGraphErrors * gr_ratio = new TGraphErrors( l->GetN() );\n        TGraph ger( r->GetN(),  r->GetX(),l->GetEY() );\n        for( int i=0; i< l->GetN(); i++ ){\n                double x = l->GetX()[i];\n                double y1 = l->GetY()[i];\n                double ey1 = l->GetEY()[i];\n                double y2 = r->Eval(x);\n                double ey2 = ger.Eval(x);\n                double ratio = y1 / y2;\n                gr_ratio->SetPoint( i,  x, ratio);\n                gr_ratio->SetPointError( i,  0, ratio*TMath::Sqrt( ey1*ey1/y1/y1+ey2*ey2/y2/y2));\n        }\n        return gr_ratio;\n}\n\n\nvoid makeHistHEPDATA(TH1F *srch, TH1F *he1, TH1F *he2, TH1F *tarh)\n{\n    const int nb=srch->GetNbinsX();\n    for(int i=1;i<=nb;i++) {\n        double rel_e1 = he1->GetBinContent(i);\n        double rel_e2 = he2->GetBinContent(i);\n        double toterr = TMath::Sqrt(rel_e1*rel_e1+rel_e2*rel_e2);\n        //cout << i <<\"\\t\"<< rel_e1<<\"\\t\"<< rel_e2<<\"\\t\"<<toterr<<endl;\n        tarh->SetBinContent(i,srch->GetBinContent(i));\n        tarh->SetBinError(i,toterr);\n    }\n}\n",
 			"file": "include/rootcommon.h",
+			"file_size": 5721,
+			"file_write_time": 132289032141108047,
 			"settings":
 			{
-				"buffer_size": 5405,
-				"encoding": "UTF-8",
+				"buffer_size": 5719,
 				"line_ending": "Unix"
 			}
 		},
@@ -59,7 +56,6 @@
 			"settings":
 			{
 				"buffer_size": 290,
-				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
@@ -76,7 +72,7 @@
 			"file": "vnPtIntegrate.C",
 			"settings":
 			{
-				"buffer_size": 14655,
+				"buffer_size": 16016,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -85,7 +81,7 @@
 			"file": "etavn.C",
 			"settings":
 			{
-				"buffer_size": 6171,
+				"buffer_size": 10897,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -123,6 +119,14 @@
 	},
 	"file_history":
 	[
+		"/Users/djkim/work/A04.pythonEx/pyplot_two_subplots.py",
+		"/Users/djkim/Documents/GitHub/A03.flowscale/hepdata_histo.C",
+		"/Users/djkim/Documents/GitHub/A03.flowscale/compareInte.C",
+		"/Users/djkim/cernbox_jfluc/NL/plot_vn.py",
+		"/Users/djkim/cernbox_jfluc/common/libs/ROOTnumpy.py",
+		"/Users/djkim/cernbox_jfluc/SC/plot_sc.py",
+		"/Users/djkim/cernbox_jfluc/common/single_vn/vn_mod.py",
+		"/Users/djkim/softwares/root_install/tutorials/pyroot/ratioplot.py",
 		"/Users/djkim/Documents/GitHub/A03.flowscale/etavn.cpp",
 		"/Users/djkim/Documents/GitHub/A03.flowscale/vnPtIntegrate.C",
 		"/Users/djkim/work/A03.flowscale/v2inte.C",
@@ -133,7 +137,7 @@
 	],
 	"find":
 	{
-		"height": 39.0
+		"height": 24.0
 	},
 	"find_in_files":
 	{
@@ -147,6 +151,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"grflow5tev",
+			"compareinte",
+			"GetIntegratedv2",
 			"GetRatio",
 			"NEnergy",
 			"fflow",
@@ -173,7 +180,7 @@
 	"groups":
 	[
 		{
-			"selected": 6,
+			"selected": 5,
 			"sheets":
 			[
 				{
@@ -198,7 +205,7 @@
 							"syntax": "Packages/C++/C++.sublime-syntax"
 						},
 						"translation.x": 0.0,
-						"translation.y": 1292.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 4,
@@ -206,47 +213,19 @@
 				},
 				{
 					"buffer": 1,
-					"file": "hepdata_histo.C",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1202,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								627,
-								670
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.sublime-syntax"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 5,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
 					"file": "include/rootcommon.h",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 5405,
+						"buffer_size": 5719,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								4289,
-								4297
+								5024,
+								5024
 							]
 						],
 						"settings":
@@ -256,14 +235,14 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 879.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 2,
+					"stack_index": 3,
 					"type": "text"
 				},
 				{
-					"buffer": 3,
+					"buffer": 2,
 					"file": "include/detector.h",
 					"semi_transient": false,
 					"settings":
@@ -275,8 +254,8 @@
 						"selection":
 						[
 							[
-								221,
-								221
+								290,
+								290
 							]
 						],
 						"settings":
@@ -289,11 +268,11 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 1,
+					"stack_index": 5,
 					"type": "text"
 				},
 				{
-					"buffer": 4,
+					"buffer": 3,
 					"file": "/Users/djkim/work/A02.JSound/YieldMean.C",
 					"semi_transient": false,
 					"settings":
@@ -316,27 +295,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 2.0,
-						"translation.y": 7300.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 6,
+					"stack_index": 2,
 					"type": "text"
 				},
 				{
-					"buffer": 5,
+					"buffer": 4,
 					"file": "vnPtIntegrate.C",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 14655,
+						"buffer_size": 16016,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2886,
-								2887
+								9702,
+								9702
 							]
 						],
 						"settings":
@@ -346,27 +325,27 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1005.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
-					"stack_index": 3,
+					"stack_index": 1,
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 5,
 					"file": "etavn.C",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6171,
+						"buffer_size": 10897,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1861,
-								1861
+								1764,
+								1764
 							]
 						],
 						"settings":
@@ -376,7 +355,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 544.0,
+						"translation.y": 1742.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -424,7 +403,7 @@
 	"project": "flowscale.sublime-project",
 	"replace":
 	{
-		"height": 70.0
+		"height": 44.0
 	},
 	"save_all_on_build": true,
 	"select_file":
