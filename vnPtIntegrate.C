@@ -392,7 +392,7 @@ void Runs(){
     //==== Lower pad
     p = fpad3->GetPad(2);
     p->SetTickx(); p->SetGridy(1); p->SetLogx(0), p->SetLogy(0); p->cd();
-    TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, -0.5,0.5);
+    TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, -0.2,0.2);
     hset( *hfr1, "centrality[%]","Ratio",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);
     hfr1->Draw();
     TGraphAsymmErrors *gr_ratio;

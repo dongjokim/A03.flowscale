@@ -17,6 +17,9 @@ TGraphAsymmErrors *gr_v2intForPtbins[Npt]; // 5TeV
 TGraphErrors *grflow[D_COUNT][NObs];
 TGraphErrors *grflow5tev[D_COUNT];
 
+TGraphErrors *grjoakim[3]; // v2 3 4
+void compareJokim();
+
 void LoadData(){
 
     TFile *finvnptint = TFile::Open("vnPtintegrated.root");
@@ -34,6 +37,11 @@ void LoadData(){
   // 5.02 TeV Freja
   for(int is = 0; is < D_COUNT; is++){
        grflow5tev[is] = (TGraphErrors*)finetaint5tev->Get(Form("grflow_etaintegratedE%02dD%02dO%02d",1,is,0));
+  }
+
+  TFile *fjk = TFile::Open("data/joakim.root");
+  for(int i=0;i<3;i++) {
+    grjoakim[i] = (TGraphErrors*)fjk->Get(Form("gr_jk_v%d",i+2));
   }
 }
 
@@ -89,4 +97,49 @@ void compareInte(){
       gr_ratio[is]->Draw("psame");
     }
     gPad->GetCanvas()->SaveAs("figs/integratedv2_differteta.pdf");
+}
+
+void compareJokim(){
+  LoadData();
+  Filipad *fpad;
+  fpad = new Filipad(1, 0.9, 0.4, 100, 100, 1.1,7);
+    fpad->Draw();
+    //==== Upper pad
+    TPad *p = fpad->GetPad(1); //upper pad
+    p->SetTickx(); p->SetLogx(0); p->SetLogy(0); p->cd();
+    double lowx = 0,highx=60.;
+    double ly=0,hy=0.2;
+    TH2F *hfr = new TH2F("hfr"," ", 100,lowx, highx, 10, ly, hy); // numbers: tics x, low limit x, upper limit x, tics y, low limit y, upper limit y
+    hset( *hfr, "centrality[%]", "v_{2,#Delta#eta>1}",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);//settings of the upper pad: x-axis, y-axis
+    hfr->Draw();
+    //Legend definition
+    TLegend *leg = new TLegend(0.2,0.5,0.85,0.78,"","brNDC");
+    leg->SetTextSize(0.04);leg->SetBorderSize(0);leg->SetFillStyle(0);//legend settings;
+    int iPT =1 ;
+    gr_v2intForPtbins[iPT]->SetMarkerStyle(qMarker[iPT]);
+    gr_v2intForPtbins[iPT]->SetMarkerColor(qColor[iPT]);
+    gr_v2intForPtbins[iPT]->SetLineColor(qColor[iPT]);
+    gr_v2intForPtbins[iPT]->Draw("psame");
+    leg->AddEntry(gr_v2intForPtbins[iPT],Form("%.1f<p_{T}<%.1f, %s",startPtbins[iPT],endPt, S_Energy[1].Data()),"lp");
+    
+    grjoakim[0]->SetMarkerStyle(qMarker[iPT+1]);
+    grjoakim[0]->SetMarkerColor(qColor[iPT+1]);
+    grjoakim[0]->Draw("psame");
+    leg->AddEntry(grjoakim[0],"Joakim's ana","p");
+    leg->Draw();
+    //==== Lower pad
+    p = fpad->GetPad(2);
+    p->SetTickx(); p->SetGridy(1); p->SetLogx(0), p->SetLogy(0); p->cd();
+    TH2F *hfr1 = new TH2F("hfr1"," ", 100, lowx, highx, 10, 0.8,1.2);
+    hset( *hfr1, "centrality[%]","#frac{Data}{Ref}",1.1,1.0, 0.09,0.09, 0.01,0.01, 0.04,0.05, 510,505);
+    hfr1->Draw();
+    TGraphErrors *gr_ratio;
+
+
+    gr_ratio = GetRatio(grjoakim[0],gr_v2intForPtbins[iPT]);
+    gr_ratio->SetMarkerStyle(qMarker[iPT+1]);
+    gr_ratio->SetMarkerColor(qColor[iPT+1]);
+    gr_ratio->Draw("psame");
+    
+    gPad->GetCanvas()->SaveAs("figs/integratedv2_jkcomp.pdf");
 }
