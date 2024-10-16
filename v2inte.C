@@ -58,6 +58,7 @@ void v2inte(){
 	double v2_0050 = integralv2(f_vn,fLevy,0.,5.0);
 	double v2_0250 = integralv2(f_vn,fLevy,0.2,5.0);
 	double v2_0550 = integralv2(f_vn,fLevy,0.5,5.0);
+	double v2_1250 = integralv2(f_vn,fLevy,1.2,5.0);
 	double v2_samp1 = SampingMethod(f_vn,fLevy,0.2,5.0);
     double v2_samp2 = SampingMethod(f_vn,fLevy,0.,5.0);
 	cout << "v2_0050 = "<< v2_0050 << endl;

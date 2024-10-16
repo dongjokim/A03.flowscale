@@ -193,8 +193,8 @@ double GetIntegratedv2(int iC, double lpt, double hpt){
 // Run over various pt bins
 void GetScaleForPtDiff(){
 	LoadHEPData();
-	const int Npt=5;
-	double startPtbins[Npt] = {0.,0.2,0.28,0.5,0.8};
+	const int Npt=6;
+	double startPtbins[Npt] = {0.,0.2,0.28,0.5,0.8,1.2};
 	double endPt = 5.0;
 	double intv2[Npt][NC];
 	double centmean[NC];
